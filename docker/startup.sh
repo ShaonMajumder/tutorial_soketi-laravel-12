@@ -14,8 +14,4 @@ else
     echo "Laravel already exists. Skipping creation."
 fi
 
-# Continue standard setup
-# composer install --no-interaction --prefer-dist --optimize-autoloader
-# php artisan package:discover
-
 exec "$@"

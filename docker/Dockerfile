@@ -51,9 +51,20 @@ RUN if [ -f artisan ] && [ -f composer.json ]; then \
     fi
 
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-RUN php artisan key:generate
+# RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# RUN php artisan key:generate
+RUN if [ -f artisan ]; then \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
+    php artisan key:generate; \
+    else \
+    echo "Laravel not found. Skipping permissions and key generation."; \
+    fi
+
+COPY ./docker/startup.sh /usr/local/bin/startup.sh
+RUN chmod +x /usr/local/bin/startup.sh
+ENTRYPOINT ["/usr/local/bin/startup.sh"]
 
 EXPOSE 80
 
