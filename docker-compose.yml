@@ -53,6 +53,18 @@ services:
       - "6379:6379"
     networks:
       - laravel
+  
+  queue:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: laravel-queue
+    command: php artisan queue:work --sleep=3 --tries=3
+    depends_on:
+      - redis
+      - app
+    networks:
+      - laravel
 
 volumes:
   dbdata:
