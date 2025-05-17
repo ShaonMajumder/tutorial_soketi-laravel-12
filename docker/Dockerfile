@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     redis-server \
     supervisor \
+    dos2unix \
     && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
 
 RUN pecl install redis && docker-php-ext-enable redis
@@ -63,6 +64,8 @@ RUN if [ -f artisan ]; then \
     fi
 
 COPY ./docker/startup.sh /usr/local/bin/startup.sh
+# Convert line endings to Unix format, fix for windows
+RUN dos2unix /usr/local/bin/startup.sh
 RUN chmod +x /usr/local/bin/startup.sh
 ENTRYPOINT ["/usr/local/bin/startup.sh"]
 
