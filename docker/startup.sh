@@ -5,7 +5,7 @@ cd /var/www/html
 # If artisan not found, assume Laravel not present
 if [ ! -f artisan ]; then
     echo "Laravel not found. Creating Laravel in /tmp/laravel..."
-    composer create-project --prefer-dist laravel/laravel /tmp/laravel
+    composer create-project --prefer-dist laravel/laravel:^12.0 /tmp/laravel
 
     echo "Copying .env from environment directory..."
     cp environment/.env /tmp/laravel/.env
