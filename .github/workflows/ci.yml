@@ -87,6 +87,9 @@ jobs:
       - name: Run composer install
         run: docker exec laravel-app composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Generate Laravel APP_KEY
+        run: docker exec laravel-app php artisan key:generate
+
       - name: Run Laravel migrations
         run: docker exec laravel-app php artisan migrate --force
 
