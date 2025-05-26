@@ -494,6 +494,10 @@ jobs:
         if: always()
         run: docker-compose down --volumes --remove-orphans
 ```
+- add this in your next git commit push.
+
+If your push and pull request are ok, then you can see the green tick on github:
+![CI](screenshots/ci.png)
 
 ---
 
