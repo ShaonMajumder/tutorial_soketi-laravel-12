@@ -1,61 +1,84 @@
-### Soketi Introduction
-soketi selfhosted opensource websocket-server
 
-### Clone docker-template
+# 🧪 Soketi + Laravel 12 WebSocket Broadcasting Tutorial
+
+This guide will help you set up a **self-hosted Soketi server** with **Laravel 12** broadcasting support using Docker.
+
+---
+
+## 🚀 1. Introduction
+
+- **Soketi** is a fast, open-source WebSocket server, compatible with the Pusher protocol.
+- This tutorial will cover Dockerized development, broadcasting events, frontend listening via Laravel Echo, and CI tests.
+
+---
+
+## 📦 2. Clone Laravel Soketi Docker Template
+
 ```bash
 git clone https://github.com/ShaonMajumder/docker-template-laravel-12-php-8.3-npm-mysql-redis-nginx-queue-soketi.git tutorial_soketi-laravel-12
 cd tutorial_soketi-laravel-12
 ```
 
-### Build the container
+---
+
+## 🛠️ 3. Build and Run Docker Containers
 
 ```bash
 docker-compose --env-file environment/.env up --build
 ```
-- for observilibity we can check at console
-- Wait and check successfully starting all service
 
-### Check soketi-server service is running
+---
 
-In browser visit http://localhost:6001/
-output: ok 
-- if ok then soketi-server is running ok
+## 🔍 4. Verify Soketi Server is Running
 
-### Go inside Container
-in another tab of terminal:
+### In Browser
+
+Visit: [http://localhost:6001](http://localhost:6001)
+
+Expected Output:
+```text
+ok
+```
+
+### Inside Container
+
 ```bash
 docker exec -it laravel-app bash
-```
-- looks like this **root@f554ac220dac:/var/www/html#** when you enter inside container
-
-inside container run:
-```bash
 curl http://soketi-server:6001
 ```
-output : ok 
-- if ok then soketi-server is running ok
 
-### Preparing Npm
-preparing container nodejs dependencies : 
-```bash
-npm install # to install node modules
-npm run build # to preapre vite engine
+Expected Output:
+```text
+ok
 ```
 
-### Install Broadcasting
-continue in the container
+---
+
+## 📦 5. Install NodeJS Dependencies (Vite)
+
+```bash
+npm install
+npm run build
+```
+
+---
+
+## 📡 6. Install Broadcasting in Laravel
+
 ```bash
 php artisan install:broadcasting
 ```
-follow the rest of the flow:
+
+### Select:
 ```bash
  Which broadcasting driver would you like to use? ────────────┐
  │   ○ Laravel Reverb                                           │
  │ › ● Pusher                                                   │
  │   ○ Ably  
+```
+- Driver: `Pusher`
 
-# Select Pusher and Press Enter
-
+```bash
  Which broadcasting driver would you like to use? ────────────┐
  │ Pusher                                                       │
  └──────────────────────────────────────────────────────────────┘
@@ -78,11 +101,15 @@ follow the rest of the flow:
  │   ○ us3                                                    │ │
  │   ○ eu                                                     │ │
  │   ○ ap1    
+```
 
-# Select mt1 and Enter 
+- Select and enter these Values:
+- App ID: `1234`
+- Key/Secret: dummy/test values
+- Cluster: Select `mt1`and press Enter
+- `pusher-php-server` will be installed by default
 
-# pusher-php-server will be installed by default
-
+```bash
  Would you like to install and build the Node dependencies required for br… ┐
  │ ● Yes / ○ No   
 
@@ -108,17 +135,18 @@ public/build/assets/app-CqvyoFfN.js   114.41 kB │ gzip: 36.11 kB
 ✓ built in 2.09s
 ```
 
-INFO : laravel-echo and pusher-js npm library will be installed, no need to manually install.
-If failed installing node dependencies, then you can manually run:
+INFO : laravel-echo and pusher-js npm library will be installed by broadcasting installer.
+If install fails, manually run:
+
 ```bash
 npm install laravel-echo pusher-js
 npm run build
 ```
-- check if failed or success fully installed 
-- hope so .env is not changed. If changed , check everything is ok, as previous. If changed then **php artisan config:clear** to load changes of .env 
 
-### Check broadcasting config
-check config/broadcasting.php: 
+---
+
+## ⚙️ 7. Verify `config/broadcasting.php`
+
 ```php
 'pusher' => [
             'driver' => 'pusher',
@@ -139,14 +167,16 @@ check config/broadcasting.php:
         ],
 ```
 
-### Creating Event
+---
+
+## ✉️ 8. Create and Dispatch an Event
 
 ```bash
 php artisan make:event NewMessage
 ```
 
-Edit NewMessage :
-```bash
+### Edit `NewMessage.php`:
+```php
 <?php
 
 namespace App\Events;
@@ -198,8 +228,8 @@ class NewMessage implements ShouldBroadcastNow
 }
 ```
 
-### Soketi Backend Check
-now inside container:
+### Test in Tinker:
+
 ```bash
 php artisan tinker
 ```
@@ -210,16 +240,17 @@ Psy Shell v0.12.8 (PHP 8.3.21 — cli) by Justin Hileman
 ```
 Now trigger the event:
 ```bash
-event(new \App\Events\NewMessage(1, 'Hello from server!'));
+event(new \App\Events\NewMessage(1, 'Hello from server!'))
 ```
-output: []
+- output: [] - if '[]' , then it is ok.
 
+### Check Soketi Logs:
 In another terminal, immediately check log, after previously triggering the event:
 ```bash
 docker-compose logs soketi
 ```
 
-In log you can find something like this:
+Expected Payload:
 ```bash
 .....
  [Sun May 25 2025 19:13:33 GMT+0000 (Coordinated Universal Time)] ⚡ HTTP Payload received   
@@ -232,9 +263,11 @@ In log you can find something like this:
 .....
 ```
 
-### Set Frontend
-edit resources/js/echo.js:
+---
 
+## 💡 9. Configure Frontend Listener
+
+Edit `resources/js/echo.js`:
 ```js
 import Echo from 'laravel-echo';
 
@@ -253,13 +286,9 @@ window.Echo = new Echo({
 });
 ```
 
-Build for production:
-```bash
-npm run build
-```
-
-in welcome.blade.php, at end of before </body>:
-```php
+### Modify `welcome.blade.php`, at end of before </body>:
+```blade
+....
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 if (window.Echo) {
@@ -274,15 +303,17 @@ in welcome.blade.php, at end of before </body>:
     </body>
 ```
 
-### Check Demo
-In browser visit to http://localhost:8000/
-and open console
+---
 
-parallaly, now in terminal inside container:
+## 🧪 10. Test Real-Time Event in Browser
+
+- Visit: [http://localhost:8000](http://localhost:8000)
+- Open browser console
+- [parallaly] now in terminal inside container:
 ```bash
 php artisan tinker
 ```
-shell will appear like this:
+Shell will appear like this:
 ```bash
 Psy Shell v0.12.8 (PHP 8.3.21 — cli) by Justin Hileman
 >
@@ -293,16 +324,22 @@ event(new \App\Events\NewMessage(1, 'Hello from server!'));
 ```
 output: []
 
+Browser Console Output:
+```js
+Message received { sender_id: 1, message: 'Hello from server!' }
+```
 See at console:
 ![png](screenshots/listening.png)
 
-### Build Unit Test
-continue inside container
+---
+
+## ✅ 11. Create Unit Test
+
 ```bash
 php artisan make:test Broadcast/NewMessageTest
 ```
 
-edit tests\Feature\Broadcast\NewMessageTest.php :
+### Edit `tests/Feature/Broadcast/NewMessageTest.php`:
 ```php
 <?php
 
@@ -341,15 +378,128 @@ class NewMessageTest extends TestCase
 }
 ```
 
-### Add CI
-### Create GitHub Actions Workflow
-Create the file:
-```bash
-git init
-code .github/workflows/ci.yml
+---
+
+## 🤖 12. GitHub Actions CI Setup
+
+### Create `.github/workflows/ci.yml`:
+```yaml
+name: Laravel Docker CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: testing_db
+          MYSQL_USER: testing_user
+          MYSQL_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: root
+        # ports:
+          # - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
+      redis:
+        image: redis:alpine
+        # ports:
+        #   - 6379:6379
+
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: testing_db
+      DB_USERNAME: testing_user
+      DB_PASSWORD: secret
+      CACHE_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: 127.0.0.1
+      PUSHER_APP_ID: test
+      PUSHER_APP_KEY: test
+      PUSHER_APP_SECRET: test
+      APP_ENV: testing
+      APP_KEY: base64:SomeDummyAppKeyThatIsValidLength=
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install docker-compose CLI
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Laravel dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.composer/cache
+            ./vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Build Docker containers
+        run: |
+          docker-compose -f docker-compose.yml build
+
+      - name: Start containers
+        run: |
+          docker-compose -f docker-compose.yml up -d mysql redis app
+          sleep 15 # wait for MySQL to be ready
+
+      - name: Run composer install
+        run: docker exec laravel-app composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Generate Laravel APP_KEY
+        run: docker exec laravel-app php artisan key:generate
+
+      - name: Run Laravel migrations
+        run: docker exec laravel-app php artisan migrate --force
+
+      - name: Run Laravel tests
+        run: docker exec laravel-app php artisan test
+
+      # Optional: Run Pint or PHPStan
+      # - name: Run Laravel Pint
+      #   run: docker exec laravel-app ./vendor/bin/pint
+
+      # - name: Run PHPStan
+      #   run: docker exec laravel-app ./vendor/bin/phpstan analyse
+
+      - name: Tear down containers
+        if: always()
+        run: docker-compose down --volumes --remove-orphans
 ```
 
-edit .github/workflows/ci.yml :
-```yml
+---
 
-```
+## ✅ Done!
+
+You now have:
+- 📡 Soketi working in Docker
+- 📤 Laravel broadcasting via WebSockets
+- 📊 Laravel Echo frontend integration
+- ✅ CI test coverage
