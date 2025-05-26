@@ -1,6 +1,7 @@
 
 # 🧪 Soketi + Laravel 12 WebSocket Broadcasting Tutorial
 
+![Cover](screenshots/cover.jpg)
 This guide will help you set up a **self-hosted Soketi server** with **Laravel 12** broadcasting support using Docker.
 
 ---
